@@ -9,6 +9,8 @@ import time # for waiting
 # Project imports
 from model import *
 from math import *
+from PIL import Image
+import numpy as np
 
 class Controller(object):
 	""" A high-level class used to start and control the Computer Graphics
@@ -100,6 +102,40 @@ class Controller(object):
 		
 		glutSolidCube( world_size )  #Cube of size world
 		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL )  # set back
+		
+		#Texturing
+		glassTex = Image.open( "texture_wood.bmp" )
+		
+		# create textures
+		glassTexID = glGenTextures( 1 )
+		gnp = np.array(glassTex)
+		
+		# just use linear filtering
+		glBindTexture( GL_TEXTURE_2D, glassTexID )
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR )
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR )
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT )
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT )
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, glassTex.size[0], glassTex.size[1], 0, GL_RGB,
+				GL_UNSIGNED_BYTE, gnp.ctypes.data_as(ctypes.POINTER(ctypes.c_short)) )
+		
+		
+		
+		glEnable(GL_BLEND);		
+		glBindTexture( GL_TEXTURE_2D, glassTexID )
+		
+		glTranslatef( -0.5, -0.5, 0 )
+		
+		glBegin( GL_QUADS )
+        glTexCoord2f( 0, 0.075 ); glVertex3f( 0, 0, 0 )
+        glTexCoord2f( 0.075, 0.075 ); glVertex3f( 0, 0, -0.1 )
+        glTexCoord2f( 0.075, 0.925 ); glVertex3f( 0, 1, -0.1 )
+        glTexCoord2f( 0, 0.925 ); glVertex3f( 0, 1, 0 )
+		glEnd( )
+		glDisable(GL_BLEND);
+		
+		
+		
 		glPopMatrix()
 
 	def keyPressed(self, key, x, y):
@@ -194,6 +230,8 @@ class Controller(object):
 		glLightfv( GL_LIGHT0, GL_SPECULAR, GLfloat_3(1,1,1) )
 		glLightfv( GL_LIGHT0, GL_POSITION, GLfloat_4(x,y,z,1) )
 		glEnable( GL_LIGHT0)
+		
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		
 		#Position Sphere
 		glTranslatef( x, y, z)
